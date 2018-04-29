@@ -5,9 +5,10 @@
  *      Author: Igor G. Custodio
  */
 
-#include <GPIO.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <tm4c123gh6pm.h>
+#include "GPIO.h"
+
 
 /**
  * Returns the bit field in the port
@@ -36,13 +37,23 @@ int pinNumber(uint32_t pin) {
  *
  * Utiliza o registrador enviado por parametro e define a direcao dele (INPUT/OUTPUT)
  */
-void setPinDirection(uint32_t port, uint32_t pin, int direction, uint32_t *registerAddr) {
+void setPinDirection(uint32_t port, uint32_t pin, int direction, volatile uint32_t *registerAddr) {
 	if (direction == OUTPUT) {
 		if (readPinDirection(port, pin) == 1)
 			return;
-		registerAddr ^= pin;
+		*(registerAddr) ^= pin;
 	} else {
-		registerAddr &= ~pin;
+		*(registerAddr) &= ~pin;
+	}
+}
+
+void setPinValue(uint32_t port, uint32_t pin, int value, volatile uint32_t *registerAddr) {
+	if (value == HIGH) {
+		if (readPin(port, pin) == 1)
+			return;
+		*(registerAddr) ^= pin;
+	} else {
+		*(registerAddr) &= ~pin;
 	}
 }
 
@@ -53,10 +64,10 @@ void setPinDirection(uint32_t port, uint32_t pin, int direction, uint32_t *regis
  *
  * @return int value of register
  */
-int readRegisterValue(uint32_t port, uint32_t pin, uint32_t *registerAddr) {
+int readRegisterValue(uint32_t port, uint32_t pin, volatile uint32_t *registerAddr) {
 	int i = pinNumber(pin);
 
-	return (registerAddr >> i) & 0x01;
+	return (*(registerAddr) >> i) & 0x01;
 }
 
 /**
@@ -73,32 +84,26 @@ void setPin(uint32_t port, uint32_t pin, int direction) {
     switch (port) {
         case PORT_A:
         	setPinDirection(port, pin, direction, &GPIO_PORTA_DIR_R);
-            GPIO_PORTA_DATA_R   ^= 0;
             GPIO_PORTA_DEN_R    ^= pin;
             break;
         case PORT_B:
             setPinDirection(port, pin, direction, &GPIO_PORTB_DIR_R);
-            GPIO_PORTB_DATA_R   ^= 0;
             GPIO_PORTB_DEN_R    ^= pin;
             break;
         case PORT_C:
             setPinDirection(port, pin, direction, &GPIO_PORTC_DIR_R);
-            GPIO_PORTC_DATA_R   ^= 0;
             GPIO_PORTC_DEN_R    ^= pin;
             break;
         case PORT_D:
         	setPinDirection(port, pin, direction, &GPIO_PORTD_DIR_R);
-            GPIO_PORTD_DATA_R   ^= 0;
             GPIO_PORTD_DEN_R    ^= pin;
             break;
         case PORT_E:
         	setPinDirection(port, pin, direction, &GPIO_PORTE_DIR_R);
-            GPIO_PORTE_DATA_R   ^= 0;
             GPIO_PORTE_DEN_R    ^= pin;
             break;
         case PORT_F:
         	setPinDirection(port, pin, direction, &GPIO_PORTF_DIR_R);
-            GPIO_PORTF_DATA_R   ^= 0;
             GPIO_PORTF_DEN_R    ^= pin;
             break;
     }
@@ -114,17 +119,17 @@ int readPin(uint32_t port, uint32_t pin) {
 
     switch (port) {
         case PORT_A:
-            return readRegisterValue(port, pin, GPIO_PORTA_DATA_R);
+            return readRegisterValue(port, pin, &GPIO_PORTA_DATA_R);
         case PORT_B:
-        	return readRegisterValue(port, pin, GPIO_PORTB_DATA_R);
+        	return readRegisterValue(port, pin, &GPIO_PORTB_DATA_R);
         case PORT_C:
-        	return readRegisterValue(port, pin, GPIO_PORTC_DATA_R);
+        	return readRegisterValue(port, pin, &GPIO_PORTC_DATA_R);
         case PORT_D:
-        	return readRegisterValue(port, pin, GPIO_PORTD_DATA_R);
+        	return readRegisterValue(port, pin, &GPIO_PORTD_DATA_R);
         case PORT_E:
-        	return readRegisterValue(port, pin, GPIO_PORTE_DATA_R);
+        	return readRegisterValue(port, pin, &GPIO_PORTE_DATA_R);
         case PORT_F:
-        	return readRegisterValue(port, pin, GPIO_PORTF_DATA_R);
+        	return readRegisterValue(port, pin, &GPIO_PORTF_DATA_R);
         default:
         	return 0;
     }
@@ -141,18 +146,43 @@ int readPinDirection(uint32_t port, uint32_t pin) {
 
 	switch (port) {
 		case PORT_A:
-			return readRegisterValue(port, pin, GPIO_PORTA_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTA_DIR_R);
 		case PORT_B:
-			return readRegisterValue(port, pin, GPIO_PORTB_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTB_DIR_R);
 		case PORT_C:
-			return readRegisterValue(port, pin, GPIO_PORTC_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTC_DIR_R);
 		case PORT_D:
-			return readRegisterValue(port, pin, GPIO_PORTD_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTD_DIR_R);
 		case PORT_E:
-			return readRegisterValue(port, pin, GPIO_PORTE_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTE_DIR_R);
 		case PORT_F:
-			return readRegisterValue(port, pin, GPIO_PORTF_DIR_R);
+			return readRegisterValue(port, pin, &GPIO_PORTF_DIR_R);
 		default:
 			return 0;
+	}
+}
+
+void writePin(uint32_t port, uint32_t pin, int value) {
+	switch (port) {
+		case PORT_A:
+			setPinValue(port, pin, value, &GPIO_PORTA_DATA_R);
+		break;
+		case PORT_B:
+			setPinValue(port, pin, value, &GPIO_PORTB_DATA_R);
+			break;
+		case PORT_C:
+			setPinValue(port, pin, value, &GPIO_PORTC_DATA_R);
+			break;
+		case PORT_D:
+			setPinValue(port, pin, value, &GPIO_PORTD_DATA_R);
+			break;
+		case PORT_E:
+			setPinValue(port, pin, value, &GPIO_PORTE_DATA_R);
+			break;
+		case PORT_F:
+			setPinValue(port, pin, value, &GPIO_PORTF_DATA_R);
+			break;
+		default:
+			break;
 	}
 }
