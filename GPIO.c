@@ -47,6 +47,10 @@ void setPinDirection(uint32_t port, uint32_t pin, int direction, volatile uint32
 	}
 }
 
+/**
+ * Set a value to pin selected
+ *
+ * */
 void setPinValue(uint32_t port, uint32_t pin, int value, volatile uint32_t *registerAddr) {
 	if (value == HIGH) {
 		if (readPin(port, pin) == 1)
@@ -56,6 +60,16 @@ void setPinValue(uint32_t port, uint32_t pin, int value, volatile uint32_t *regi
 		*(registerAddr) &= ~pin;
 	}
 }
+
+void setInterrupt(uint32_t pin, int sensibility, int event, int bothBorder, volatile uint32_t *sensibilityRegister, volatile uint32_t *eventInterruptRegister, volatile uint32_t *bothBorderRegister, volatile uint32_t *enableRegister) {
+
+    *(enableRegister) = 0x00;
+    *(sensibilityRegister) = sensibility;
+    *(eventInterruptRegister) = event;
+    *(bothBorderRegister) = bothBorder;
+    *(enableRegister) = pin;
+}
+
 
 /**
  * Returns the value of register
@@ -185,4 +199,33 @@ void writePin(uint32_t port, uint32_t pin, int value) {
 		default:
 			break;
 	}
+}
+
+void enableInterruption(uint32_t port, uint32_t pin, int state, int sensibility, int event, int bothBorder) {
+    if (state) {
+        switch (port) {
+            case PORT_A:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTA_IS_R, &GPIO_PORTA_IEV_R, &GPIO_PORTA_IBE_R, &GPIO_PORTA_IM_R);
+            break;
+            case PORT_B:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTB_IS_R, &GPIO_PORTB_IEV_R, &GPIO_PORTB_IBE_R, &GPIO_PORTB_IM_R);
+                break;
+            case PORT_C:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTC_IS_R, &GPIO_PORTC_IEV_R, &GPIO_PORTC_IBE_R, &GPIO_PORTC_IM_R);
+                break;
+            case PORT_D:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTD_IS_R, &GPIO_PORTD_IEV_R, &GPIO_PORTD_IBE_R, &GPIO_PORTD_IM_R);
+                break;
+            case PORT_E:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTE_IS_R, &GPIO_PORTE_IEV_R, &GPIO_PORTE_IBE_R, &GPIO_PORTE_IM_R);
+                break;
+            case PORT_F:
+                setInterrupt(pin, sensibility, event, bothBorder, &GPIO_PORTF_IS_R, &GPIO_PORTF_IEV_R, &GPIO_PORTF_IBE_R, &GPIO_PORTF_IM_R);
+                break;
+            default:
+                break;
+        }
+    } else {
+        return;
+    }
 }
