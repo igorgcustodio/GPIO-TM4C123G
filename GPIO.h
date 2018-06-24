@@ -4,7 +4,7 @@
  * This library is destined to manipule the GPIO ports on Tiva C-Series TM4C123G
  *
  *  Created on: 29 de abr de 2018
- *      Author: Igor G. Custodio
+ *      Author: igorgcustodio
  */
 
 #ifndef GPIO_H_
@@ -40,6 +40,14 @@
 
 #define TRUE    1
 #define FALSE   0
+
+void interruptPortA(void);
+void interruptPortB(void);
+void interruptPortC(void);
+void interruptPortD(void);
+void interruptPortE(void);
+void interruptPortF(void);
+
 
 /**
  * Enables or disables the port
