@@ -63,11 +63,10 @@ void setPinValue(uint32_t port, uint32_t pin, int value, volatile uint32_t *regi
 
 void setInterrupt(uint32_t pin, int sensibility, int event, int bothBorder, volatile uint32_t *sensibilityRegister, volatile uint32_t *eventInterruptRegister, volatile uint32_t *bothBorderRegister, volatile uint32_t *enableRegister) {
 
-    *(enableRegister) = 0x00;
-    *(sensibilityRegister) = sensibility;
-    *(eventInterruptRegister) = event;
-    *(bothBorderRegister) = bothBorder;
-    *(enableRegister) = pin;
+    *(sensibilityRegister) |= sensibility;
+    *(eventInterruptRegister) |= event;
+    *(bothBorderRegister) |= bothBorder;
+    *(enableRegister) |= pin;
 }
 
 
